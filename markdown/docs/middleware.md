@@ -32,7 +32,7 @@ export default function () {
 
 ### middleware.onAfterHTTPRequest
 
-在 HTTP 请求之后执行，此时，尚未将 HTTP 请求中的 Body 解析为递交给 Api Action 的 Params。
+在 HTTP 请求到达时执行，此时，尚未将 HTTP 请求中的 Body 解析为递交给 Api Action 的 Params。
 
 如果请求非来自 HTTP，此钩子不会被执行。
 
@@ -40,19 +40,19 @@ export default function () {
 
 ### middleware.onBeforeExecute
 
-在 Api Action 执行之前执行。此时，已经将 HTTP 请求中的 Body 解析为递交给 Api Action 的 Params。
+在你的 Api Action 执行之前执行。此时，已经将 HTTP 请求中的 Body 解析为递交给 Api Action 的 Params。
 
 参数：`context`
 
 ### middleware.onAfterExecute
 
-在 Api Action 执行之后执行。此时，已有 Api Action 的执行结果，为第二个参数。
+在你的 Api Action 执行之后执行。此时，已有 Api Action 的执行结果，为第二个参数。
 
 参数：`context`, `response`
 
 ### middleware.onBeforeHTTPResponse
 
-在 HTTP 请求响应之前执行。此时，已将 Api Action 的执行结果，转换为 HTTP 响应的实际 Body。
+在 HTTP 请求发送响应之前执行。此时，已将 Api Action 的执行结果，转换为 HTTP 响应的实际 Body。
 
 如果请求非来自 HTTP，此钩子不会被执行。
 
