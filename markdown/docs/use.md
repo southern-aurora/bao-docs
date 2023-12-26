@@ -56,4 +56,4 @@ export function useSayHello(options: UseSayHelloOptions) {
 
 因此，在 Bao 中，我们约定俗成，Use 将会是一个比 Service 更纯粹的东西，它只是一些通用的功能的封装，而不应该包含任何业务逻辑。
 
-Use 之间不应该相互调用，如果一个需求你认为需要多个 Use 才能完成，那么你应该在 Api Action 中，通过调用多个 Use 的方式完成，而不是在 Use 中相互调用。
+Use 之间不应该相互调用，如果一个需求你认为需要多个 Use 才能完成，那么你应该在 Api Action 中，通过调用多个 Use 的方式完成，或者将一个 Use 作为另一个 Use 的参数 (控制反转)。而不是在 Use 中相互调用。
