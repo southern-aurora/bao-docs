@@ -4,35 +4,97 @@ title: Logger
 
 # Logger
 
-日志对应用后期的问题排查非常重要，虽然可以使用 `console.log` 打印日志，但我们可能会有更多的日志需求，比如，我们想要将日志保存到文件中，或者我们想要将日志发送到云服务商的日志系统中。为了解除耦合，Bao 提供了一个日志记录器。
+日志对应用线上产生的问题排查非常重要，虽然可以使用 `console.log` 打印日志，但我们可能会有更多的日志需求。比如，本地调试时，将日志打印在终端中，而在生产环境中，不在终端打印以节省性能，并将日志保存到文件中，或者，将日志发送到云服务商的日志系统中。
 
-## 编写
+Bao 提供了一个日志记录器，可以帮助你解决这些问题。Bao 本身的日志，也是通过日志记录器来写入的。
 
-我们约定俗成不使用 `console` 来打印日志，而是使用 `logger`。
+## 使用日志记录器
 
-```ts
-import { logger } from "/src/logger";
+我们可以随时通过 `useLogger` 方法来创建一个日志记录器，通常，它需要一个 `executeId`。
 
-logger.log("hello world");
+```ts{8-12}
+// file: /src/app/api.ts
+
+import { useLogger, defineApi } from "southern-aurora-bao";
+
+export const helloWorld = defineApi({
+  meta: {},
+  action(params: {}, context) {
+    const logger = useLogger(context.executeId);
+    logger.debug("Hello world!");
+    logger.log("Hello world!");
+    logger.warn("Hello world!");
+    logger.error("Hello world!");
+  },
+});
 ```
 
-我们实际调用的是位于 `/src/logger.ts` 中的 `logger`。默认情况下，`logger` 是一个 `console` 对象，你可以自定义它。
+`executeId` 来自你 Api 的 `context` 对象，它是唯一的。对于每个请求来说，都是不相同的，它们以 `exec#` 为开头。Bao 的日志记录器通过它们来区分不同的请求。
+
+在较高并发的场景下，不同用户会在同一时间向你发送请求。这意味着，不同用户请求的日志将交替出现。当出现问题时，我们往往无法定位一条日志属于哪个请求，这为我们在生产环境中的除错带来了很大的困扰。因此，我们非常建议你传入 `executeId`。但是，在某些特殊场景下，你可能无法取到它。这个时候，你可以传入 `global`，日志记录器会向所有并发中的请求，同时写入这条日志。
 
 ```ts
-import type { Logger } from "southern-aurora-bao";
-
-// By default, log output to the console
-// You can customize an object to implement the log output to the file, or send it to the private log center
-export const logger: Logger = console;
+const logger = useLogger("global");
 ```
 
-只要编写一个符合 `Logger` 类型的对象即可：
+## 自定义日志记录器
+
+你可以自由修改 `/src/logger.ts` 来自定义日志记录器的行为。默认情况下，正如代码编写所示，你的日志记录器会在控制台中直接显示你的日志。
 
 ```ts
-type Logger = {
-  debug: (...args: Array<unknown>) => void;
-  log: (...args: Array<unknown>) => void;
-  warn: (...args: Array<unknown>) => void;
-  error: (...args: Array<unknown>) => void;
-};
+// file: /src/logger.ts
+
+export const loggerOptions = {
+  onInsert: (options) => {
+    // eslint-disable-next-line no-console
+    console[options.loggerLevel](`[${options.executeId}] ${options.description}`, ...options.params);
+
+    return true;
+  },
+  onSubmit: (tags, logs) => {
+    //
+  },
+} satisfies LoggerOptions;
 ```
+
+### onInsert
+
+`onInsert` 会在你每次使用日志记录器记录日志时被调用，它必须是一个同步的方法。你需要返回 `true` 或 `false`。当你返回 `false` 时，此日志将丢弃。例如，你可以通过返回 `false`，来实现生产环境中，不记录 `debug` 等级的日志的功能。
+
+我们建议你，不要在此方法中将日志持久化保存 (如写入文件、发送到各种日志系统中)。每次请求可能会有大量的日志需要写入，这将导致极其频繁的 IO，会带来性能下降。
+
+我们建议你在 `onSubmit` 方法中再将日志持久化保存，只在此方法中将日志输出在控制台中，并判断此条日志是否需要丢弃。
+
+### onSubmit
+
+`onSubmit` 会在一个请求即将结束时被调用，它可以是一个异步的方法或者返回 `Promise`。你可以在此阶段，将关于此请求的有关的日志持久化保存。
+
+它的 `tags` 参数包含了所被打上的若干标签。默认情况下，它包含这些内容：
+
+|               Key | Value                           |
+| ----------------: | ------------------------------- |
+|            `from` | 来源 "http-server" \| "execute" |
+|       `executeId` | 执行此请求的唯一 id             |
+|          `method` | 请求方式                        |
+|              `ip` | 请求发起者的 IP 地址            |
+|             `url` | 请求地址                        |
+|          `params` | 请求的参数 (Object)             |
+|            `body` | 最终响应的数据 (String)         |
+|          `timein` | 接收到请求的时间 (Number)       |
+|         `timeout` | 请求响应的时间 (Number)         |
+|  `requestHeaders` | 请求头 (Object)                 |
+| `responseHeaders` | 响应头 (Object)                 |
+
+你不能认为这些内容总是存在的，例如，在一些极端情况，请求直接被终止时，可能 `body`、`params`、`responseHeaders` 等内容不会被添加。以及，当通过编写 `execute` 代码，而非发送 `HTTP` 请求的方式调用时，诸如 `ip` 等数据将会不存在，同时也会获得一些其他的值。
+
+## 添加自定义标签
+
+你可以通过 `loggerPushTags` 方法为某个请求添加若干自定义标签，自定义标签会最终包含在 `onSubmit` 方法的参数中。
+
+```ts
+import { loggerPushTags } from "southern-aurora-bao";
+
+loggerPushTags(executeId, { userInfo: ..., permissions: ... });
+```
+
+在以往的日志中，我们往往会把请求的所属用户信息、权限等数据直接输出到日志中，这会掩埋我们的关键信息。合理的使用标签，有助于让你的日志只有关键信息，变得更加易读。

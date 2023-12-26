@@ -34,7 +34,7 @@ export type Context = {
 
 在所有情况下，context 都包含以下属性：
 
-- `context.contextId`：当前请求的唯一标识符。
+- `context.executeId`：当前请求的唯一标识符。
 
 - `context.headers`：当前请求的头部信息。
 

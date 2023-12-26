@@ -9,7 +9,7 @@ scripts = ['''
 ''']
 
 ["publish"]
-commands = ["publish", "publ", "p:d"]
+commands = ["publish", "publ", "p"]
 scripts = ['''
     bun run docs:build
     && git add --all

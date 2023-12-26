@@ -4,7 +4,7 @@ title: Config
 
 # Config
 
-我们经常需要存储各种配置，比如，与数据库的连接信息、各种秘钥。配置的获取渠道也各有不同，也许是硬编码，也许是 `.env` 文件，也许是环境变量。
+我们经常需要存储各种配置，比如，与数据库的连接信息、各种秘钥。配置的获取渠道也各有不同，也许是硬编码，也许是 `.env.localhost` 文件，也许是环境变量。
 
 ## 编写
 
@@ -41,12 +41,24 @@ export const configExample = {
 };
 ```
 
+## 指定模式
+
+默认情况下，Bun 会读取 `.env` 文件，假设你有多个环境，比如，在本地开发时使用一套环境变量，而在部署时，使用另一套，你可以通过指定模式，来使你在部署时，使用不同的文件名。
+
+比如，你想要使用 `.env.production` 文件，你可以通过设置环境变量 `MODE` 的值为 `.env.production` 来实现。
+
+除此以外，你也可以通过在执行命令时，指定 `--mode=.env.production` 来实现。
+
+注意：如果你使用 [Prisma](https://www.prisma.io/)，由于 Prisma 不支持更改 `.env` 文件的名称，因此，你可能需要额外为 Prisma 设置环境变量。
+
 ## 读取 .env 文件
 
-如果想要自动读取项目根目录下的 `.env` 文件，并将其注入到 `process.env` 中，可以在你的 `/index.ts` 顶部添加如下代码：
+在 `v1.0.12` 之后版本的 Bun，已经实现了[自动读取环境变量的功能](https://bun.sh/docs/runtime/env#manually-specifying-env-files)。
+
+如果你在使用旧版本的 Bun，同时又想要自动读取项目根目录下的 `.env` 文件，并将其注入到 `process.env` 中，可以在你的 `/index.ts` 顶部添加如下代码：
 
 ```ts
 import "southern-aurora-bao/load-env-file";
 ```
 
-在 Bao 的 `.env` 文件中，不会对内容进行任何形式的转义，因此，你不需要为 `.env` 文件中的内容添加引号。
+在 Bao 的 `.env` 文件中，不会对内容进行任何形式的转义，因此，你始终不需要为 `.env` 文件中的内容添加引号。
