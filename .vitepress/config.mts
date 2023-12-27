@@ -127,6 +127,13 @@ export default defineConfig({
           },
           {
             text: `
+              <span class="lang-en">CacheResult</span>
+              <span class="lang-zh">CacheResult 结果缓存</span>
+            `,
+            link: "/markdown/docs/cache-result",
+          },
+          {
+            text: `
               <span class="lang-en">Logger</span>
               <span class="lang-zh">Logger 日志</span>
             `,
