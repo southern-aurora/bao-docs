@@ -94,13 +94,10 @@ import { type LoggerOptions, type ExecuteId } from "southern-aurora-bao";
 
 export const loggerOptions = {
   onSubmit: (tags, logs) => {
-    // eslint-disable-next-line no-console
     console.log(`🧊 Bao Responsed! by :`, tags.url);
-    // eslint-disable-next-line no-console
     console.log(JSON.stringify(tags));
   },
   onInsert: (options) => {
-    // eslint-disable-next-line no-console
     console[options.loggerLevel](options.description, ...options.params);
 
     return true;
