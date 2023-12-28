@@ -12,9 +12,9 @@ Bao 在启动前，会进入生成阶段。
 
 具体而言，生成阶段会完成以下几件事：
 
-- 递归扫描你的 `/src/app` 目录，并将你的 Api 的概要，生成在 `/generate/schema.ts` 文件中。每次有新的请求时，会尝试从这个文件中匹配所对应的 Api 并执行。
+- 递归扫描你的 `/src/app` 目录，并将你的 Api 的路由，生成在 `/generate/api-schema.ts` 文件中。每次有新的请求时，会尝试从这个文件中匹配所对应的 Api 并执行。
 
-- 单层扫描你的 `/src/bootstrap` 目录，并将你的 Bootstrap 的概要，生成在 `/generate/schema.ts` 文件中。每次 Bao 启动时，会尝试执行你所有的 Bootstrap 中的代码。
+- 单层扫描你的 `/src/bootstrap` 目录，并将你的 Bootstrap 的概要，生成在 `/generate/bootstrap-schema.ts` 文件中。每次 Bao 启动时，会尝试执行你所有的 Bootstrap 中的代码。
 
 - 将你所有的的 Api 的所有的 params 的校验代码，生成在 `/generate/products/api-params.ts` 文件中。由它来保障，你的 Api 参数的类型安全与数据校验。
 

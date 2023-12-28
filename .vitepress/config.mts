@@ -64,6 +64,13 @@ export default defineConfig({
         items: [
           {
             text: `
+              <span class="lang-en">Router</span>
+              <span class="lang-zh">Router 路由</span>
+            `,
+            link: "/markdown/docs/router",
+          },
+          {
+            text: `
               <span class="lang-en">Api</span>
               <span class="lang-zh">Api 接口</span>
             `,
